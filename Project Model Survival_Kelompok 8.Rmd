@@ -1,0 +1,500 @@
+---
+title: ""
+output:
+  pdf_document:
+    number_sections: FALSE
+    df_print: kable
+geometry: "left = 2.5cm, right = 2cm, top = 2cm, bottom = 2cm"
+fontsize: 11pt
+header-includes:
+  - \usepackage{float}
+  - \usepackage{sectsty}
+  - \usepackage{paralist}
+  - \usepackage{setspace}\spacing{1.5}
+  - \usepackage{fancyhdr}
+  - \usepackage{lastpage}
+  - \usepackage{dcolumn}
+  - \usepackage{multicol}
+editor_options:
+  chunk_ouput_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, massage = FALSE)
+options(tinytex.verbose = TRUE)
+```
+
+\allsectionsfont{\centering}
+\subsectionfont{\raggedright}
+\subsubsectionfont{\raggedright}
+
+\pagenumbering{gobble}
+
+\begin{centering}
+
+\vspace{1cm}
+
+\large
+{\bf \emph{PROJECT} MODEL SURVIVAL}
+
+\vspace{1cm}
+
+\large
+{\bf Analisis Regresi Cox-Proportional Hazard pada Pemodelan\\Kelangsungan Hidup Pasien Kanker Payudara}
+
+\vspace{1cm}
+
+```{r uni_logo, echo = F, out.width = "30%"}
+knitr::include_graphics("Logo UI.png")
+```
+
+\vspace{1cm}
+
+\large
+{\bf Disusun oleh: \\Kelompok 8}
+
+\large
+{\bf 1. Azizah Annurohmah (2006572983)\\
+2. Diki Wahyudi (2106709131)\\
+3. Farah Ramadhani Putri (2106654832)}
+
+\vspace{1cm}
+
+\large
+{\bf PROGRAM STUDI STATISTIKA\\FAKULTAS MATEMATIKA DAN ILMU PENGETAHUAN ALAM\\UNIVERSITAS INDONESIA\\JUNI 2023}
+
+\end{centering}
+
+\newpage
+
+\pagenumbering{roman}
+\renewcommand{\contentsname}{DAFTAR ISI}
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\newpage
+
+# ABSTRAK
+
+Analisis Survival merupakan sebuah metode statistika yang memperhatikan waktu hingga terjadinya suatu kejadian (*event*). Tujuan dari analisis survival adalah menaksir probabilitas kelangsungan hidup, kematian, dan peristiwa lainnya sampai periode waktu tertentu. Salah satu Analisis Survival yang paling popular digunakan adalah regresi Cox-Proportional Hazard. Regresi Cox-Proportional Hazard merupakan salah satu regresi semiparametrik yang bertujuan untuk mengetahui kombinasi faktor-faktor yang berpengaruh terhadap variabel respon yang berupa waktu survival. Dalam penelitian ini, waktu survival yang digunakan adalah waktu lamanya hidup pasien kanker payudara setelah menjalani operasi. Data yang digunakan adalah data kelangsungan hidup pasien yang telah menjalani operasi kanker payudara antara tahun 1958 sampai 1970 di Rumah Sakit Billings Universitas Chicago. Berdasarkan hasil analisis dan pengujian diperoleh model regresi Cox-PH yang terbaik adalah $\hat{h}(t, x_1) = h_0(t)\exp(0.05462 \times x_1)$ dengan $x_1$ adalah banyaknya nodus aksila pada pasien. Berdasarkan kategori jumlah nodus aksila dan tahun dilakukannya operasi, pasien kanker payudara yang memiliki jumlah nodus aksila $\geq$ 10 setelah menjalani operasi memiliki kemungkinan 3.51750 kali untuk mengalami kematian dalam waktu 5 tahun dibandingkan pasien kanker payudara yang memiliki jumlah nodus aksila < 10.
+
+**Kata kunci**: Analisis Survival, Regresi Cox-Proportional Hazard, Kanker Payudara.
+
+\newpage
+
+# BAB I PENDAHULUAN
+
+\pagenumbering{arabic}
+
+## 1.1 Latar Belakang
+
+Kanker payudara adalah penyakit tumbuhnya sel abnormal yang tidak terkendali di jaringan payudara. Pertumbuhan sel abnormal ini dapat merusak sel normal di sekitar payudara dan dapat menjalar ke bagian tubuh yang lain. Pada tahun 2020, terdapat 2.3 juta perempuan yang didiagnosis dengan kanker payudara dan 685.000 meninggal. Tingkat mortalitas pada kanker payudara tidak banyak berubah pada tahun 1930 sampai 1970. Terdapat sedikit penurunan tingkat mortalitas pada tahun 1980 dengan berkembangnya teknologi untuk mendeteksi kanker payudara lebih dini.
+
+Analisis regresi Cox-PH adalah metode statistik yang digunakan untuk menganalisis waktu kelangsungan hidup pasien atau waktu terjadinya suatu peristiwa, seperti kematian, dengan mempertimbangkan faktor-faktor risiko yang mempengaruhi. Metode ini relevan dalam konteks pemodelan kelangsungan hidup pasien kanker payudara, karena memungkinkan peneliti untuk mengidentifikasi faktor-faktor yang berkontribusi terhadap prognosis pasien.
+
+Project ini menggunakan Haberman’s Survival Dataset. Dataset ini berdasarkan studi yang dilakukan pada tahun 1958 hingga 1970 di University of Chicago’s Billings Hospital tentang tingkat survival pada pasien kanker payudara yang telah melakukan operasi. Dataset ini memiliki 4 variabel yaitu usia, tahun operasi, banyaknya nodus aksila positif yang terdeteksi, dan status bertahan hidup. Berdasarkan dataset Haberman’s Survival Dataset akan dibuat model prediktif yang dapat memprediksi kelangsungan hidup pasien kanker payudara dan melihat hubungan antara umur, tahun operasi, dengan kelangsungan hidup pasien kanker payudara.
+
+## 1.2 Rumusan Masalah
+
+Berdasarkan latar belakang masalah dari penelitian yang dilakukan, maka dapat dibuat beberapa rumusan masalah sebagai berikut.
+
+1. Bagaimana hubungan antara umur, tahun operasi, dan banyaknya nodus aksila positif yang terdeteksi, dengan kelangsungan hidup pasien kanker payudara?
+
+2. Bagaimana model regresi Cox-PH untuk memprediksi kelangsungan hidup pasien kanker payudara?
+
+## 1.3 Tujuan
+
+Tujuan dari penelitian ini adalah
+
+1. Mengidentifikasi faktor risiko yang memiliki hubungan signifikan dengan kelangsungan hidup pasien kanker payudara.
+
+2. Mengukur kekuatan hubungan antara faktor-faktor risiko tersebut dengan risiko kelangsungan hidup pasien.
+
+3. Mengembangkan model prediktif yang dapat memprediksi kelangsungan hidup pasien berdasarkan faktor-faktor risiko yang relevan.
+
+## 1.4 Manfaat
+
+Manfaat dari penelitian ini adalah
+
+1. Bagi penulis \newline Menambah ilmu tentang Analisis Survival menggunakan salah satu metode semiparametrik, yaitu model regresi Cox-Proportional Hazard dan menerapkannya berdasarkan teori dan ilmu yang telah didapatkan selama dalam perkuliahan.
+
+2. Bagi pembaca \newline Hasil penelitian diharapkan dapat berguna sebagai bahan evaluasi pengaplikasian model regresi Cox-Proportional dalam dunia nyata.
+
+\newpage
+
+# BAB II METODE PENELITIAN 
+
+## 2.1 Variabel Penelitian
+
+Kami menggunakan data yang diambil dari UCI Machine Learning Repository melalui link berikut ini. \textcolor{blue}{\url{https://archive.ics.uci.edu/dataset/43/haberman+s+survival}}. Dataset tersebut berisi kasus-kasus dari penelitian yang dilakukan antara tahun 1958 dan 1970 di Rumah Sakit Billings Universitas Chicago tentang kelangsungan hidup pasien yang telah menjalani operasi kanker payudara.
+
+Keterangan variabel:
+
+  - `age` (*Age*): usia pasien pada saat menjalani operasi. 
+  - `op_year` (*Operation Year*): tahun operasi pasien (tahun 1900-an); misalnya `op_year` = 60, berarti operasi terjadi pada tahun 1960.
+  - `axil_nodes`: jumlah nodus aksila positif yang terdeteksi. Nodus aksila merupakan kelenjar getah bening di daerah ketiak yang mengalirkan getah bening dari payudara dan daerah sekitarnya. Nodus aksila mengalirkan pembuluh getah bening dari kuadran lateral payudara, pembuluh getah bening superfisial dari dinding tipis dada dan perut di atas tingkat pusar, dan pembuluh dari ekstremitas atas. Nodus aksila terbagi dalam beberapa kelompok sesuai dengan lokasinya di ketiak. Kelenjar getah bening ini secara klinis signifikan pada kanker payudara, dan metastasis dari payudara ke kelenjar getah bening aksila dipertimbangkan dalam stadium penyakit. 
+  - `surv_status` (*Survival Status*): status bertahan hidup. "1"; pasien bertahan 5 tahun atau lebih dan "2"; pasien meninggal dalam waktu 5 tahun.
+
+## 2.2 Data
+
+### Import Library
+
+```{r inputlibrary, echo = TRUE}
+library(readxl)
+library(ggplot2)
+library(survival)
+library(survminer)
+``` 
+
+### Import Data
+
+```{r import data, results = "hide"}
+haberman <- read_excel("D:/Materi Kuliah UI/Model Survival/Tugas Model Survival/haberman.xlsx")
+colnames(haberman) <- c("age", "op_year", "axil_nodes", "surv_status")
+```
+
+Akan ditampilkan 6 baris pertama pada data tersebut.
+
+```{r}
+head(haberman)
+```
+
+Untuk observasi pertama, pasien menjalani operasi kanker payudara saat usia 30 tahun pada 1964. Pasien tersebut terdeteksi memiliki 1 nodus aksila yang positif. Pasien tersebut bertahan 5 tahun atau lebih. Untuk observasi keempat, pasien menjalani operasi kanker payudara saat usia 31 tahun pada 1959. Pasien tersebut terdeteksi memiliki 2 nodus aksila yang positif. Pasien tersebut bertahan 5 tahun atau lebih.  
+
+
+```{r, echo = FALSE}
+df1 <- haberman
+```
+
+### Ukuran Data
+
+```{r size, include = TRUE}
+dim(haberman)
+```
+
+Terlihat bahwa data terdiri dari 306 observasi (baris) dan 4 variabel (kolom).
+
+## 2.3 Jenis Data
+
+- `age`: numerik, rasio
+- `op_year`: numerik, rasio
+- `axil_nodes`: numerik, rasio
+- `surv_status`: kategorik, nominal
+
+```{r type, include = TRUE}
+str(haberman)
+```
+
+Karena `surv_status` masih bertipe numerik, variabel tersebut akan diubah menjadi variabel kategorik dalam bentuk factor di R. 
+
+```{r}
+haberman$surv_status <- as.factor(haberman$surv_status)
+```
+
+## 2.4 Metode Analisis Data
+
+### Fungsi Survival
+
+Analisis survival didasarkan pada probabilitas bahwa peristiwa yang ingin diamati belum terjadi pada waktu $t$. Fungsi survival bergantung pada waktu, $S(t)$, umumnya digunakan untuk mewakili probabilitas tersebut.
+
+$$S(t) = P(T>t)$$
+
+Dengan kata lain, $S(t)$ sesuai dengan probabilitas bertahan hidup setelah waktu $t$. Dalam kasus ini, $T$ merupakan waktu sampai pasien yang melakukan operasi kanker payudara bertahan hidup. Karena distribusi dari $T$ tidak diketahui, akan digunakan estimasi nonparametrik yaitu estimasi Kaplan-Meier.
+
+Untuk semua $t$ yang berada pada rentang data, taksiran fungsi survival dengan metode Kaplan-Meier (Product-Limit) adalah
+
+$$\hat{S}(t) = \left\{
+\begin{array}{ll}
+1 &, t < t_1 \\
+\prod_{t_i\leq t}[1 - \frac{d_i}{Y_i}] &, t_i \leq t \\
+\end{array}
+\right.$$
+
+dengan $S(0) = 1$, dan $S(t)$ tidak terdefinisi untuk $t > t_{\mbox{max}}$ dengan $t_{\mbox{max}}$ adalah waktu terbesar teramatinya suatu *event*.
+
+**Keterangan**: misalkan *event* terjadi pada $D$ titik waktu yang berbeda, yaitu pada waktu $t_1 < t_2 < ... < t_D$. Pada waktu $t_i$
+terjadi sebanyak $d_i$ *event*. $R_i$ adalah himpunan yang memuat objek-objek yang berisiko mengalami event saat waktu $t_i$. $Y_i$ adalah banyaknya anggota $R_i$. Jika penyensoran terjadi pada waktu $t_i$ di mana terjadi *event*, maka penyensoran diasumsikan terjadi sesudah *event* terjadi, sehingga $Y_i$ masih memperhitungkan objek yang tersensor. $\frac{d_i}{Y_i}$ adalah taksiran untuk probabilitas bersyarat bahwa subyek yang *survive* (belum mengalami *event* hingga awal waktu $t_i$) akan mengalami *event* saat $t_i$. $\frac{Y_i-d_i}{Y_i}$ adalah taksiran untuk probabilitas bersyarat bahwa subjek yang berhasil melewati waktu
+$t_{i-1}$ akan *survive* melewati waktu $t_i$.
+
+### Fungsi Hazard
+
+Fungsi hazard menyatakan tingkat bahaya sesaat, yakni, untuk
+suatu objek yang berhasil bertahan hingga waktu $t$, maka tingkat bahaya, atau risiko, dari objek tersebut untuk mengalami *event* secara tiba - tiba saat itu, dinyatakan dengan $h(t)$, yaitu 
+
+$$h(t) = \lim_{\Delta t \to 0} \frac{Pr(t < T \leq t + \Delta t| T>t)}{\Delta t}.$$ 
+
+Fungsi hazard kumulatif, $H(t)$, dinyatakan sebagai $H(t) = \int_0^t h(u)du$, $t > 0$. Dengan menggunakan metode Nelson-Aalen, fungsi kumulatif hazard dapat ditaksir dengan perumusan berikut
+
+$$\tilde{H}(t) = \left\{
+\begin{array}{ll}
+0 &, t < t_1 \\
+\sum_{t_i\leq t}\frac{d_i}{Y_i} &, t_i \leq t \\
+\end{array}
+\right.$$ 
+
+### Regresi Cox-Proportional Hazard
+
+Fungsi hazard pada waktu $t$ dengan variabel penjelas $x_1, ..., x_p$ dinyatakan dengan model regresi Cox-PH sebagai berikut.
+
+$$h(t, \textbf{x}) = h_0(t)e^{\beta_1x_1 + ... + \beta_px_p},$$
+
+dengan $h_0(t)$ adalah baseline hazard yang bergantung pada waktu $t$, dan $e^{\beta_1x_1 + ... + \beta_px_p}$ adalah komponen kontribusi dari variabel penjelas. $\beta_j, j = 1, ..., p$ adalah koefisien regresi yang bersesuaian dengan variabel penjelas $x_j$. 
+
+\newpage
+
+# BAB III HASIL DAN PEMBAHASAN
+
+## 3.1 Analisis Deskriptif
+
+### *Preprocessing*
+
+```{r}
+str(haberman)
+```
+
+Jenis variabel pada R sudah sesuai.
+
+Akan dicek apakah terdapat *missing value* atau tidak.
+
+```{r}
+sapply(haberman, function(x) sum(is.na(x)))
+```
+
+Terlihat bahwa data `haberman` tidak memiliki *missing value*.
+
+### Statistika Deskriptif
+
+```{r}
+summary(haberman)
+```
+
+Dalam data tersebut, banyaknya kelenjar getah bening yang terdeteksi mulai dari 0 sampai 52. Usia pasien berkisar antara 30-83 tahun, di mana pasien menjalani operasi pada waktu antara 1958–1969. Dari hasil `summary` di atas, terdapat 225 pasien dari 306 yang bertahan lebih dari 5 tahun dan hanya 81 pasien yang bertahan kurang dari 5 tahun.
+
+### Visualisasi
+
+```{r, fig.align = "center"}
+ggplot(data = haberman, aes(x = age, y = axil_nodes,
+                            colour = surv_status, shape = surv_status)) +
+  geom_point() + facet_wrap(~surv_status) + theme_bw() +
+  ggtitle("Scatter Plot")
+```
+
+Dari visualisai tersebut, terlihat bahwa jumlah nodus aksila yang lebih tinggi cenderung memiliki probabilitas kelangsungan hidup yang lebih rendah (terdapat banyak pada `surv_status` kategori 2). Pasien dengan jumlah nodus aksila 0 memiliki peluang bertahan hidup yang lebih baik tanpa memandang usia. Pasien senior (usia lebih dari 50) dengan lebih dari 10 nodus memiliki peluang bertahan hidup yang rendah.
+
+### Fungsi Survival
+
+Dengan menggunakan R, didapatkan hasil sebagai berikut.
+
+```{r}
+fs.survival <- survfit(Surv(age, surv_status=="2") ~ 1, data = haberman)
+summary(fs.survival)
+```
+
+Hasil tersebut tidak efisien jika dibaca satu per satu. Oleh karena itu, hasil tersebut akan divisualisasikan.
+
+```{r}
+ggsurvplot(fs.survival, conf.int = TRUE, pval = TRUE, risk.table = TRUE, 
+           main = "Kurva Fungsi Survival Kaplan-Meier untuk Pasien Kanker Payudara", 
+           risk.table.height = 0.15)
+```
+
+Dari hasil tersebut terlihat bahwa sekitar 50% pasien operasi kanker payudara *survive* dalam waktu lebih dari 5 tahun di usia lebih dari 65 tahun. Berdasarkan hasil visualiasi pada bagian sebelumnya, akan dibuat kurva fungsi survival berdarsarkan `axil_nodes`, di mana akan dibuat menjadi dua kategori yaitu "a": terdapat $\geq 10$ nodus aksila dan "b": terdapat $< 10$ nodus aksila. Akan dibuat variabel baru yaitu `axnod_type` berdasarkan kategori tersebut. 
+
+```{r}
+haberman$axnod_type <- ifelse(haberman$axil_nodes>=10, "a", "b")
+haberman$axnod_type <- as.factor(haberman$axnod_type)
+fs.survival2 <- survfit(Surv(age, surv_status=="2") ~ axnod_type, data = haberman)
+ggsurvplot(fs.survival2, conf.int = TRUE, pval = TRUE, risk.table = FALSE,
+           legend.title = "Kategori",  
+           palette = c("dodgerblue2", "orchid2"),
+           main = "Kurva Fungsi Survival Kaplan-Meier", 
+           risk.table.height = 0.15)
+```
+
+Ada dua kurva fungsi survival, satu untuk setiap kategori. Dari kurva tersebut, terlihat bahwa pasien yang memiliki jumlah nodus aksila yang terdeteksi positif $\geq 10$ lebih besar kemungkinannya untuk meninggal lebih cepat dibandingkan pasien yang memiliki nodus aksila yang terdeteksi positif $< 10$. Sebelum umur 45 tahun, kedua kurva hampir sama. Pada titik di mana $t > 45$, dapat terlihat bahwa probabilitas survival berwarna biru lebih kecil daripada probabilitas survival berwarna ungu. Jadi, terdapat perbedaan antara fungsi survival berdasarkan jumlah nodus aksila yang terdeteksi positif pada pasien. Hal tersebut mengindikasikan bahwa
+`axnod_type` merupakan calon variabel penjelas yang cukup baik untuk waktu bertahan hidup pada pasien kanker payudara.
+
+### Fungsi Hazard
+
+Akan diestimasi fungsi hazard dari data tersebut dengan menggunakan metode Nelson-Aalen.
+
+```{r}
+fs.hazard <- fs.survival$n.event/fs.survival$n.risk
+H.NA <- vector()
+for (i in 1:length(fs.hazard)){
+  H.NA[i] <- sum(fs.hazard[1:i])
+}
+plot(fs.survival$time, H.NA,
+     xlab = "Waktu Survival, t", ylab = "Hazard Kumulatif, H(t)",
+     main = "Fungsi H(t) berdasarkan Nelson-Aalen",
+     type = "s", col = 1)
+```
+
+Fungsi hazard tersebut meningkat seiring dengan bertambahnya usia yang menandakan semakin tua usia, maka risiko untuk mengalami kematian kurang dari 5 tahun setelah menjalani operasi makin tinggi.
+
+## 3.2 Analisis Regresi Cox-PH
+
+Untuk kasus ini, akan dibuat dua model regresi Cox-PH di mana variabel model pertama variabel penjelasnya yaitu `op_year` dan `axnod_type` (jenis data kategorik) dan model kedua variabel penjelasnya `op_year` dan `axil_nodes`, di mana jumlah nodus aksila tetap dalam jenis data numerik. 
+
+### Model Pertama 
+
+Karena terdapat dua *level* pada variabel `axnod_type`, maka tidak diperlukan variabel *dummy*. Kategori "b" akan dijadikan *baseline* dalam model.
+
+$$\mbox{axnod}\_\mbox{type} = \left\{
+\begin{array}{ll}
+1 &, \mbox{kategori} \: a \: (\geq 10 \: \mbox{nodus aksila}) \\
+0 &, \mbox{kategori} \: b \: (< 10 \: \mbox{nodus aksila})\\
+\end{array}
+\right.$$
+
+```{r}
+haberman$axnod_type <- ifelse(haberman$axnod_type=="a", 1, 0)
+```
+
+
+Model regresi Cox-PH untuk data ini yaitu sebagai berikut.
+
+$$h(t, \textbf{x}) = h_0(t)\exp(\beta_1x_1 + \beta_2x_{a})$$
+
+dengan $x_1 := \mbox{op}\_\mbox{year}$ dan $x_a := \mbox{axnod}\_\mbox{type}$.
+
+```{r}
+cox_ph1 <- coxph(Surv(age, surv_status=="2") ~ op_year + axnod_type, data = haberman)
+summary(cox_ph1)
+```
+
+Terlihat bahwa pada pasien yang memiliki jumlah nodus aksila $\geq 10$ ($x_a = 1$), hazard untuk mengalami kematian adalah 3.51750 kali dibandingkan dengan hazard untuk pasien yang memiliki jumlah nodus aksila $< 10$ ($x_a = 0$). Hal ini mengimplikasikan bahwa pasien dengan jumlah nodus aksila $< 10$ memiliki kondisi yang lebih baik, dalam hal berisiko lebih rendah untuk mengalami kematian dalam waktu 5 tahun setelah operasi. Variabel `op_year` tidak signifikan karena $p-value = 0.461 > \alpha = 0.05$. Secara keseluruhan, model ini cukup baik dalam menjelaskan kondisi pasien yang menjalani operasi kanker payudara. Terlihat dari uji model, $p-value$ untuk uji rasio likelihood adalah $2e-05$, lebih kecil dari taraf signifikansi 0.05. Hal ini mengimplikasikan bahwa minimal salah satu dari variabel `year` atau `axnod_type` dapat menjelaskan lama waktu hingga pasien mengalami kematian. Namun, karena variabel `year` tidak signifikan, dugaan sementara hanya variabel `axnod_type` saja yang signifikan dalam menjelaskan lama waktu hingga pasien mengalami kematian.
+
+### Model Kedua
+
+Model regresi Cox-PH untuk data ini yaitu sebagai berikut.
+
+$$h(t, \textbf{x}) = h_0(t)\exp(\beta_1x_1 + \beta_2x_{2})$$
+
+dengan $x_1 := \mbox{op}\_\mbox{year}$ dan $x_2 := \mbox{axil}\_\mbox{nodes}$.
+
+```{r}
+cox_ph2 <- coxph(Surv(age, surv_status=="2") ~ op_year + axil_nodes, data = haberman)
+summary(cox_ph2)
+```
+
+Terlihat bahwa variabel `axil_nodes` signifikan karena $p-value = 4.52e-08 < \alpha = 0.05$. Sama seperti model pertama, variabel `op_year` dalam model kedua juga tidak signifikan karena $p-value = 0.42 > \alpha = 0.05$. Secara keseluruhan, model ini cukup baik dalam menjelaskan kondisi pasien yang menjalani operasi kanker payudara karena $p-value$ untuk uji rasio likelihood adalah $2e-05$, lebih kecil dari taraf signifikansi 0.05. 
+
+### Model Final
+
+Karena dalam kedua model variabel `op_year` tidak signifikan, maka variabel `year` tidak akan dimasukan dalam model final. Akan dilakukan pengecekan asumsi *proportional hazard* untuk variabel `axnod_type`.
+
+```{r}
+haberman$axnod_type <- ifelse(haberman$axnod_type==1, "a", "b")
+haberman$axnod_type <- as.factor(haberman$axnod_type)
+plot(survfit(Surv(age, surv_status=="2") ~ axnod_type, data = haberman),
+     fun = "cloglog", lty = 1:2, mark.time = FALSE,
+     xlab = "Waktu Survival, T",
+     ylab = "ln(H(t))")
+legend(30, 0, legend = c("a", "b"), lty = 1:2, bty = "n")
+```
+
+Karena plot antara $\mbox{ln}(H_a(t))$ dan $\mbox{ln}(H_b(t))$ tidak paralel, asumsi PH untuk variabel `axnod_type` tidak terpenuhi. Selain itu, membuat variabel numerik menjadi variabel kategorik akan mengurangi kualitas informasi yang sesungguhnya. Oleh karena itu, untuk model final akan digunakan variabel `axil_nodes` dibandingkan dengan `axnod_type`. Model regresi Cox-PH final untuk kasus ini yaitu sebagai berikut.
+
+$$h(t, x_1) = h_0(t)\exp(\beta_1x_1) \tag{1}$$
+
+dengan $x_1 := \mbox{axil}\_\mbox{nodes}$.
+
+```{r}
+cox_ph <- coxph(Surv(age, surv_status=="2") ~ axil_nodes, data = haberman)
+summary(cox_ph)
+```
+
+Didapatkan estimasi parameter $\beta_1$ yaitu $\hat{\beta_1} = 0.05462$, sehingga taksiran untuk model regresi Cox-PH ini yaitu
+
+$$\hat{h}(t, x_1) = h_0(t)\exp(0.05462 \times x_1) \tag{2}.$$
+Terlihat bahwa $\exp(0.05462) =  1.05614 > 1$ yang berarti semakin banyak jumlah nodus aksila yang terdeteksi positif, maka risiko untuk mengalami kematian pada pasien kanker payudara meningkat.
+
+## 3.3 Pengecekan Asumsi *Proportional Hazard* untuk Model Final
+
+Akan dilakukan pengujian asumsi *proportianal hazard* untuk model pada persamaan $(2)$.
+
+$H_0:$ hazard proporsional
+
+$H_1:$ hazard tidak proporsional
+
+```{r}
+test.ph <- cox.zph(cox_ph)
+test.ph
+```
+
+Dari hasil tersebut, didapatkan $p-value$ = 0.065 > $\alpha$ = 0.05 yang berarti $H_0$ tidak ditolak. Oleh karena itu, `axil_nodes` memenuhi asumsi *proportional hazard* signifikan secara statistik. 
+
+\newpage
+
+# PENUTUP
+
+## 4.1 Kesimpulan
+
+Berdasarkan hasil analisis yang telah dilakukan menggunakan data kelangsungan hidup pasien kanker payudara yang telah menjalani operasi antara tahun 1958 sampai 1970 di Rumah Sakit Billings Universitas Chicago, didapatkan kesimpulan sebagai berikut.
+
+1. Model Cox-Proportional Hazard terbaik untuk data kelangsungan hidup pasien kanker payudara yang telah menjalani operasi antara tahun 1958 sampai 1970 di Rumah Sakit Billings Universitas Chicago memiliki persamaan sebagai berikut.
+$$\hat{h}(t, x_1) = h_0(t)\exp(0.05462 \times x _1)$$
+di mana $x_1$ adalah jumlah banyaknya nodus aksila positif terdeteksi pada pasien kanker payudara setelah menjalani operasi. Dari taksiran fungsi hazard tersebut, terlihat bahwa memiliki banyak nodus aksila, menunjukkan peningkatan risiko kematian pada penderita kanker payudara. 
+
+2. Berdasarkan tipe nodus aksila sesuai jumlah nodus aksila yang terdeteksi (< 10 atau $\geq 10$) dan tahun dilakukannya operasi, nilai hazard ratio nodus aksila sebesar $\exp(1.25775)$ = 3.51750 yang artinya pasien kanker payudara yang memiliki jumlah nodus aksila positif terdeteksi $\geq$ 10 setelah menjalani operasi memiliki kemungkinan 3.51750 kali untuk mengalami kematian dalam waktu 5 tahun dibandingkan pasien kanker payudara yang memiliki jumlah nodus aksila positif terdeteksi < 10.
+
+\newpage
+
+# DAFTAR PUSTAKA 
+
+[1] Abdullah, S. (2022). *Analisis Survival: Konsep dan Aplikasi dengan R*. Bumi Aksara.
+
+[2] cancer.gov. *Definition of Cancer Terms*. Diakses pada 13 Juni 2023, dari \textcolor{blue}{\url{https://www.cancer.gov/publications/dictionaries/cancer-terms/def/axillary-lymph-node}}
+
+[3] Dukalang, Hendra. (2019). *Analisis Regresi COX Proportional Hazard pada Pemodelan Waktu Tunggu Mendapatkan Pekerjaan*. Jambura Jurnal of Mathematics: Volume 1 No. 1. Diakses dari \textcolor{blue}{\url{https://ejurnal.ung.ac.id/index.php/jjom/article/view/1744/1271}} 
+
+[4] en.wikipedia.org. *Axillary lymph nodes*. Diakses pada 13 Juni 2023, dari \textcolor{blue}{\url{https://en.wikipedia.org/wiki/Axillary_lymph_nodes}}
+
+[5] Klein, J. P. and Moeschberger, M. L. (2005). *Survival Analysis: Techniques for Censored and Truncated Data*. Springer Science & Business Media.
+
+[6] who.int. (2021). *Breast cancer*. Diakses dari \textcolor{blue}{\url{https://www.who.int/news-room/fact-sheets/detail/breast-cancer}}
+
+## *Link* File
+
+- archive.ics.uci.edu. Haberman's Survival. Data diambil dari *link* berikut. \textcolor{blue}{\url{https://archive.ics.uci.edu/dataset/43/haberman+s+survival}}
+
+- File *project*, R, dan lain-lain dapat diakses pada *link* berikut. \textcolor{blue}{\url{https://drive.google.com/drive/folders/1l9mhIL5OWozdyxS8p_r32k7_7OfgMiZU?usp=drive_link}}
+
+\newpage
+
+# LAMPIRAN 
+
+## Lampiran I. Data Penelitian 
+
+```{r, echo = FALSE}
+library(knitr)
+colnames(df1) <- c("Age", "Operation Year", "Axillary Nodes", 
+                   "Survival Status")
+knitr::kable(cbind(df1[1:102, ], df1[103:204, ], df1[205:306, ]))
+```
+
+\newpage
+
+# PERSENTASE KONTRIBUSI KELOMPOK
+
+\begin{table}[ht]
+  \centering
+  \resizebox{\textwidth}{!}{\begin{tabular}{|c|c|c|c|c|} \hline
+  
+  No. & Nama & NPM & Kontribusi & Tingkat Kontribusi \\ \hline \hline
+  
+  1.  & Azizah Annurohmah & 2006572983 & Mengerjakan project & 100\% \\ 
+  
+  \hline
+  
+  2.  & Diki Wahyudi & 2106709131 & Mengerjakan project & 100\% \\ 
+  
+  \hline
+  
+  3.  & Farah Ramadhani Putri & 2106654832 & Mengerjakan project & 100\% \\ 
+  
+  \hline
+  
+  \end{tabular}}
+\end{table}
