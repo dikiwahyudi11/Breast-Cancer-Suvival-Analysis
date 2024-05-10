@@ -16,7 +16,6 @@ Cox-Proportional Hazard regression was employed to estimate the hazard function 
    
 2. **Hazard Ratio for Axillary Nodes**: Based on the classification of axillary nodes according to the number detected (< 10 or $\geq 10$) and the year of surgery, the hazard ratio for axillary nodes is calculated as $\exp(1.25775) = 3.51750$. This implies that breast cancer patients with 10 or more positive axillary nodes detected post-surgery are 3.51750 times more likely to experience death within 5 years compared to patients with fewer than 10 positive axillary nodes detected.
 
-
 ### Credit to Team Members
 This project was a collaborative effort, and credit goes to the entire team for their contributions to data collection, analysis, and interpretation.
 
