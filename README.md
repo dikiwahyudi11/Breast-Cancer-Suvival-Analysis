@@ -4,7 +4,6 @@
 *Figure 1: Illustration of Survival Analysis Method*
 
 ### Introduction
-
 This project is conducted as part of the course "Survival Analysis" and focuses on analyzing the survival of breast cancer patients who underwent surgery between 1958 and 1970 at the Billings Hospital, University of Chicago. We utilized Cox-Proportional Hazard regression to model the survival probabilities based on various factors, particularly the number of positive axillary nodes detected in breast cancer patients post-surgery.
 
 ### Methods
