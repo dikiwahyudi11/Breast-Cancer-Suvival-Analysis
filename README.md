@@ -11,7 +11,6 @@ This project is conducted as part of the course "Survival Analysis" and focuses 
 Cox-Proportional Hazard regression was employed to estimate the hazard function and hazard ratios for different covariates. The model's performance was evaluated using techniques such as model fitting and assumption tests.
 
 ### Key Findings
-
 1. **Best Cox-Proportional Hazard Model**: The best-fitted Cox-Proportional Hazard model for the survival data of breast cancer patients who underwent surgery between 1958 and 1970 at the Billings Hospital, University of Chicago, is represented by the equation:
    $$\hat{h}(t, x_1) = h_0(t)\exp(0.05462 \times x_1)$$
    where $x_1$ denotes the number of positive axillary nodes detected in breast cancer patients post-surgery. From the estimated hazard function, it is evident that having a higher number of axillary nodes indicates an increased risk of death for breast cancer patients.
